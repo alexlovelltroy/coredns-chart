@@ -1,0 +1,56 @@
+{{- if eq .Values.serviceType "LoadBalancer" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "coredns.fullname" . }}-tcp
+  labels:
+    heritage: {{ .Release.Service | quote }}
+    release: {{ .Release.Name | quote }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    {{- if .Values.isClusterService }}
+    k8s-app: {{ .Chart.Name | quote }}
+    {{- end }}
+    app: {{ template "coredns.name" . }}
+  annotations:
+    metallb.universe.tf/allow-shared-ip: coredns-public
+spec:
+  ports:
+  - port: 53
+    targetPort: 53
+    protocol: TCP
+  selector:
+    release: {{ .Release.Name | quote }}
+    {{- if .Values.isClusterService }}
+    k8s-app: {{ .Chart.Name | quote }}
+    {{- end }}
+    app: {{ template "coredns.name" . }}
+  type: LoadBalancer
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "coredns.fullname" . }}-udp
+  labels:
+    heritage: {{ .Release.Service | quote }}
+    release: {{ .Release.Name | quote }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    {{- if .Values.isClusterService }}
+    k8s-app: {{ .Chart.Name | quote }}
+    {{- end }}
+    app: {{ template "coredns.name" . }}
+  annotations:
+    metallb.universe.tf/allow-shared-ip: coredns-public
+spec:
+  ports:
+  - port: 53
+    targetPort: 53
+    protocol: UDP
+  selector:
+    release: {{ .Release.Name | quote }}
+    {{- if .Values.isClusterService }}
+    k8s-app: {{ .Chart.Name | quote }}
+    {{- end }}
+    app: {{ template "coredns.name" . }}
+  type: LoadBalancer
+{{- end }}
